@@ -103,7 +103,8 @@ int main(int argc, char* argv[])
 		struct passwd* pw = getpwuid(uid);
 		EL_ERROR(pw == nullptr, TException, TString::Format("unable to lookup username for current user with UID=%d in password database", uid));
 		const TString username = pw->pw_name;
-		const TString fqdn = TFile("/etc/hostname").Pipe().Transform(TUTF8Decoder()).Collect();
+		TString fqdn = TFile("/etc/hostname").Pipe().Transform(TUTF8Decoder()).Collect();
+		fqdn.Trim();
 		principal = uid == 0 ? fqdn : username;
 		const TPath keytab = uid == 0 ? TString("/etc/krb5.keytab") : TString::Format("/etc/%s.keytab", username);
 		TFile lock_file(TString::Format("/tmp/krenewd-%s-%s.lock", username, principal), TAccess::RW, ECreateMode::NX);
