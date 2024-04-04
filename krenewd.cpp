@@ -162,7 +162,7 @@ int main(int argc, char* argv[])
 	}
 
 	if(lock_acquired && destroy)
-		TProcess::Execute("/bin/kdestroy", { "-p", principal });
+		TProcess::ExecuteWithStatus("/bin/kdestroy", { "-p", principal });
 
 	return exit_code;
 }
