@@ -118,8 +118,10 @@ int main(int argc, char* argv[])
 
 		if(lock_acquired)
 		{
-			if(!RenewTicket(principal))
-				AcquireNewTicket(principal, keytab);
+			if(verbose) fprintf(stderr, "trying to acquire/renew initial ticket ... ");
+			while(! (RenewTicket(principal) || AcquireNewTicket(principal, keytab)))
+				TFiber::Sleep(5);
+			if(verbose) fprintf(stderr, "done\n");
 		}
 
 		if(foreground || EL_SYSERR(fork()) == 0)
