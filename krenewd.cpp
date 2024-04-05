@@ -116,7 +116,7 @@ int main(int argc, char* argv[])
 		if(no_passive && !lock_acquired)
 		{
 			if(verbose) fprintf(stderr, "lock already taken - exiting\n");
-			return 1;
+			throw shutdown_t();
 		}
 
 		if(lock_acquired)
@@ -155,7 +155,6 @@ int main(int argc, char* argv[])
 	}
 	catch(shutdown_t)
 	{
-		fprintf(stderr, "\nBYE!\n");
 	}
 	catch(const IException& e)
 	{
