@@ -3,6 +3,7 @@
 #include <sys/types.h>
 #include <sys/file.h>
 #include <sys/stat.h>
+#include <sys/mman.h>
 #include <pwd.h>
 
 using namespace el1::io::types;
@@ -34,7 +35,7 @@ static bool RenewTicket(const TString& principal)
 
 static bool IsProcessAlive(const pid_t pid)
 {
-	return kill(pid, 0) == 0;
+	return pid == 0 ? true : (kill(pid, 0) == 0);
 }
 
 static void CloseStdio()
@@ -69,25 +70,27 @@ int main(int argc, char* argv[])
 	bool destroy = false;
 	bool lock_acquired = false;
 	TString principal;
+	TTime renew_interval;
+	bool foreground = true;
+	bool no_passive = false;
+	bool no_lock = false;
+	bool trace = false;
+	pid_t master_pid = -1;
 
 	try
 	{
-		TTime renew_interval;
-		bool foreground = true;
-		bool no_passive = false;
-		bool trace = false;
-		pid_t master_pid = -1;
 		{
 			s64_t i = 10 * 60 / 3;
 			s64_t pid = EL_SYSERR(getppid());
 			ParseCmdlineArguments(argc, argv,
-				TIntegerArgument(&pid, 'm', "master", "", true, false, "PID of the master process to monitor (default parent)"),
+				TIntegerArgument(&pid, 'm', "master", "", true, false, "PID of the master process to monitor (default parent). Set to '0' to disable monitor."),
 				TIntegerArgument(&i, 'i', "interval", "KRENEWD_INTERVAL", true, false, "time interval between renewing the ticket"),
 				TFlagArgument(&destroy, 'd', "destroy", "", "destroy ticket on exit (but only when we acquired the lock)"),
 				TFlagArgument(&no_passive, 'p', "no-passive", "", "exit immediately if the lock cannot be acquired"),
 				TFlagArgument(&foreground, 'f', "foreground", "", "do not fork into background"),
 				TFlagArgument(&::verbose, 'v', "verbose", "KRENEWD_VERBOSE", "print status messages"),
-				TFlagArgument(&trace, 't', "trace", "", "show trace output from kinit")
+				TFlagArgument(&trace, 't', "trace", "", "show trace output from kinit"),
+				TFlagArgument(&no_lock, 'l', "no-lock", "", "ignore the singelton lock")
 			);
 			renew_interval = TTime(i, 0);
 			master_pid = pid;
@@ -95,9 +98,9 @@ int main(int argc, char* argv[])
 
 		if(trace)
 			EnvironmentVariables().Set("KRB5_TRACE", "/dev/stderr");
-		else
-			CloseStdio();
 
+		mlockall(MCL_CURRENT|MCL_FUTURE);
+		CloseStdio();
 		EL_SYSERR(umask(0177));
 		const uid_t uid = EL_SYSERR(getuid());
 		struct passwd* pw = getpwuid(uid);
@@ -108,7 +111,7 @@ int main(int argc, char* argv[])
 		principal = uid == 0 ? fqdn : username;
 		const TPath keytab = uid == 0 ? TString("/etc/krb5.keytab") : TString::Format("/etc/%s.keytab", username);
 		TFile lock_file(TString::Format("/tmp/krenewd-%s-%s.lock", username, principal), TAccess::RW, ECreateMode::NX);
-		lock_acquired = TryAcquireLock(lock_file);
+		lock_acquired = no_lock || TryAcquireLock(lock_file);
 
 		if(no_passive && !lock_acquired)
 		{
@@ -118,10 +121,9 @@ int main(int argc, char* argv[])
 
 		if(lock_acquired)
 		{
-			if(verbose) fprintf(stderr, "trying to acquire/renew initial ticket ... ");
-			while(! (RenewTicket(principal) || AcquireNewTicket(principal, keytab)))
+			if(verbose) fprintf(stderr, "trying to acquire initial ticket ... \n");
+			while(! AcquireNewTicket(principal, keytab))
 				TFiber::Sleep(5);
-			if(verbose) fprintf(stderr, "done\n");
 		}
 
 		if(foreground || EL_SYSERR(fork()) == 0)

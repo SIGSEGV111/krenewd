@@ -7,10 +7,11 @@ StartLimitBurst=2147483647
 
 [Service]
 Type=exec
-ExecStart=/usr/local/bin/krenewd -v -f
+ExecStart=/usr/local/bin/krenewd --master=0 --foreground --verbose
 MemoryMax=67108864
 Restart=always
 RestartSec=5
+Environment=KRB5CCNAME=KEYRING:user:0
 
 [Install]
 WantedBy=multi-user.target
