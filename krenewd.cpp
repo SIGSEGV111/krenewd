@@ -85,12 +85,12 @@ int main(int argc, char* argv[])
 			ParseCmdlineArguments(argc, argv,
 				TIntegerArgument(&pid, 'm', "master", "", true, false, "PID of the master process to monitor (default parent). Set to '0' to disable monitor."),
 				TIntegerArgument(&i, 'i', "interval", "KRENEWD_INTERVAL", true, false, "time interval between renewing the ticket"),
-				TFlagArgument(&destroy, 'd', "destroy", "", "destroy ticket on exit (but only when we acquired the lock)"),
-				TFlagArgument(&no_passive, 'p', "no-passive", "", "exit immediately if the lock cannot be acquired"),
-				TFlagArgument(&foreground, 'f', "foreground", "", "do not fork into background"),
+				TFlagArgument(&destroy, 'd', "destroy", "KRENEWD_DESTROY", "destroy ticket on exit (but only when we acquired the lock)"),
+				TFlagArgument(&no_passive, 'p', "no-passive", "KRENEWD_NOPASSIVE", "exit immediately if the lock cannot be acquired"),
+				TFlagArgument(&foreground, 'f', "foreground", "KRENEWD_FOREGROUND", "do not fork into background"),
 				TFlagArgument(&::verbose, 'v', "verbose", "KRENEWD_VERBOSE", "print status messages"),
-				TFlagArgument(&trace, 't', "trace", "", "show trace output from kinit"),
-				TFlagArgument(&no_lock, 'l', "no-lock", "", "ignore the singelton lock")
+				TFlagArgument(&trace, 't', "trace", "KRENEWD_TRACE", "show trace output from kinit"),
+				TFlagArgument(&no_lock, 'l', "no-lock", "KRENEWD_NOLOCK", "ignore the singelton lock")
 			);
 			renew_interval = TTime(i, 0);
 			master_pid = pid;
@@ -145,7 +145,7 @@ int main(int argc, char* argv[])
 					TFiber::Sleep(renew_interval);
 				}
 
-				if(verbose) fprintf(stderr, "master_pid process died - exiting\n");
+				if(verbose) fprintf(stderr, "master process died - exiting\n");
 			}
 			catch(shutdown_t)
 			{
