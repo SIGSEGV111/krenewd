@@ -110,9 +110,13 @@ int main(int argc, char* argv[])
 		const TString username = pw->pw_name;
 		TString fqdn = TFile("/etc/hostname").Pipe().Transform(TUTF8Decoder()).Collect();
 		fqdn.Trim();
-		principal = uid == 0 ? fqdn : username;
+		principal = uid == 0 ? TString::Format("host/%s", fqdn) : username;
+		TString username_safe = username;
+		TString principal_safe = principal;
+		principal_safe.Replace("/", "_");
+		username_safe.Replace("/", "_");
 		const TPath keytab = uid == 0 ? TString("/etc/krb5.keytab") : TString::Format("/etc/%s.keytab", username);
-		TFile lock_file(TString::Format("/tmp/krenewd-%s-%s.lock", username, principal), TAccess::RW, ECreateMode::NX);
+		TFile lock_file(TString::Format("/tmp/krenewd-%s-%s.lock", username_safe, principal_safe), TAccess::RW, ECreateMode::NX);
 		lock_acquired = no_lock || TryAcquireLock(lock_file);
 
 		if(no_passive && !lock_acquired)
