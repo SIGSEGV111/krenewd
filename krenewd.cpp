@@ -74,6 +74,7 @@ int main(int argc, char* argv[])
 	bool foreground = true;
 	bool no_passive = false;
 	bool no_lock = false;
+	bool no_block = false;
 	bool trace = false;
 	pid_t master_pid = -1;
 
@@ -90,7 +91,8 @@ int main(int argc, char* argv[])
 				TFlagArgument(&foreground, 'f', "foreground", "KRENEWD_FOREGROUND", "do not fork into background"),
 				TFlagArgument(&::verbose, 'v', "verbose", "KRENEWD_VERBOSE", "print status messages"),
 				TFlagArgument(&trace, 't', "trace", "KRENEWD_TRACE", "show trace output from kinit"),
-				TFlagArgument(&no_lock, 'l', "no-lock", "KRENEWD_NOLOCK", "ignore the singelton lock")
+				TFlagArgument(&no_lock, 'l', "no-lock", "KRENEWD_NOLOCK", "ignore the singelton lock"),
+				TFlagArgument(&no_block, 'b', "no-block", "KRENEWD_NOBLOCK", "do not block if initial ticket acquire failed")
 			);
 			renew_interval = TTime(i, 0);
 			master_pid = pid;
@@ -121,8 +123,8 @@ int main(int argc, char* argv[])
 
 		if(lock_acquired)
 		{
-			if(verbose) fprintf(stderr, "trying to acquire initial ticket ... \n");
-			while(! AcquireNewTicket(principal, keytab))
+			if(verbose) fprintf(stderr, "trying to renew/acquire initial ticket ... \n");
+			while(! (RenewTicket(principal) || AcquireNewTicket(principal, keytab)) && !no_block)
 				TFiber::Sleep(5);
 		}
 
