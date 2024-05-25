@@ -136,6 +136,7 @@ int main(int argc, char* argv[])
 		{
 			try
 			{
+				if(verbose) fprintf(stderr, "entering normal operation\n");
 				TFiber::Sleep(renew_interval);
 				while(IsProcessAlive(master_pid))
 				{
