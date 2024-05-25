@@ -20,7 +20,7 @@ static bool verbose = false;
 static bool AcquireNewTicket(const TString& principal, const TPath& keytab)
 {
 	if(verbose) fprintf(stderr, "requesting new ticket from KDC ... ");
-	const bool status = TProcess::ExecuteWithStatus("/bin/kinit", { "-k", "-t", keytab, principal }) == 0;
+	const bool status = TProcess::ExecuteWithStatus("/usr/bin/kinit", { "-k", "-t", keytab, principal }) == 0;
 	if(verbose) fprintf(stderr, status ? "OK\n" : "FAILED\n");
 	return status;
 }
@@ -28,7 +28,7 @@ static bool AcquireNewTicket(const TString& principal, const TPath& keytab)
 static bool RenewTicket(const TString& principal)
 {
 	if(verbose) fprintf(stderr, "renewing ticket ... ");
-	const bool status = TProcess::ExecuteWithStatus("/bin/kinit", { "-R", principal }) == 0;
+	const bool status = TProcess::ExecuteWithStatus("/usr/bin/kinit", { "-R", principal }) == 0;
 	if(verbose) fprintf(stderr, status ? "OK\n" : "FAILED\n");
 	return status;
 }
@@ -163,7 +163,7 @@ int main(int argc, char* argv[])
 	}
 
 	if(lock_acquired && destroy)
-		TProcess::ExecuteWithStatus("/bin/kdestroy", { "-p", principal });
+		TProcess::ExecuteWithStatus("/usr/bin/kdestroy", { "-p", principal });
 
 	return exit_code;
 }
