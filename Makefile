@@ -9,4 +9,4 @@ clean:
 	rm -f -- krenewd
 
 krenewd: krenewd.cpp Makefile
-	g++ -Wall -Wextra -std=c++20 -flto=4 -Os -fwhole-program -o $@ krenewd.cpp
+	clang++ -Wall -Wextra -std=gnu++20 -flto -Os -o $@ krenewd.cpp
