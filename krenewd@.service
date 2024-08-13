@@ -1,0 +1,21 @@
+[Unit]
+Description=Kerberos Ticket Renewal Daemon for user %I
+After=network.target
+StartLimitIntervalSec=0
+StartLimitBurst=2147483647
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/krenewd --master 0 --destroy --foreground --verbose
+User=%I
+Restart=always
+RestartSec=15
+WorkingDirectory=/tmp
+UMask=0077
+
+# Security
+PrivateTmp=false
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
