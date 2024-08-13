@@ -136,19 +136,18 @@ static void ShowVersion()
 
 int main(int argc, char* argv[])
 {
-	int exit_code = 0;
 	bool destroy = false;
 	bool lock_acquired = false;
-	TString principal;
-	TTime renew_interval;
 	bool foreground = true;
 	bool no_passive = false;
 	bool no_lock = false;
 	bool no_block = false;
 	bool trace = false;
+	int exit_code = 0;
 	s64_t master_pid = -1;
 	TString session_id;
-	chdir("/");
+	TString principal;
+	TTime renew_interval;
 
 	try
 	{
@@ -187,6 +186,7 @@ int main(int argc, char* argv[])
 				throw shutdown_t();
 			}
 
+			chdir("/");
 			CloseStdio();
 			renew_interval = TTime(i, 0);
 
