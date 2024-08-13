@@ -19,4 +19,8 @@ install: krenewd
 	install -D -m 644 krenewd@.service "$(UNITDIR)/krenewd@.service"
 
 rpm: krenewd.cpp krenewd@.service Makefile krenewd.spec
-	easy-rpm.sh --name krenewd --outdir . --sign --keyid BE5096C665CA4595AF11DAB010CD9FF74E4565ED --inspect --debug -- $^
+	@if [ -z "$(RPMDIR)" ]; then \
+		easy-rpm.sh --name krenewd --outdir . --plain --sign --keyid BE5096C665CA4595AF11DAB010CD9FF74E4565ED --inspect --debug -- $^; \
+	else \
+		easy-rpm.sh --name krenewd --outdir "$(RPMDIR)" --sign --keyid BE5096C665CA4595AF11DAB010CD9FF74E4565ED --inspect --debug -- $^; \
+	fi
