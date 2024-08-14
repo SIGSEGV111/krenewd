@@ -11,14 +11,16 @@ UNITDIR ?= /usr/lib/systemd/system
 all: krenewd
 
 clean:
-	rm -f -- krenewd
+	rm -vf -- krenewd krenewd.1 *.rpm
 
 krenewd: krenewd.cpp Makefile
-	pandoc -s -f markdown -t man krenewd.md -o krenewd.1
 	clang++ -Wall -Wextra -std=gnu++20 -flto -Os -lsystemd "-DVERSION=\"$(VERSION)\"" -o $@ krenewd.cpp
 	./krenewd --version
 
-install: krenewd
+krenewd.1: krenewd.md Makefile
+	pandoc -s -f markdown -t man krenewd.md -o krenewd.1
+
+install: krenewd krenewd.1 krenewd@.service Makefile
 	mkdir -p "$(BINDIR)" "$(MANDIR)/man1" "$(UNITDIR)"
 	install krenewd "$(BINDIR)/"
 	install -m 644 krenewd@.service "$(UNITDIR)/krenewd@.service"
