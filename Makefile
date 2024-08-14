@@ -1,4 +1,4 @@
-.PHONY: all clean install rpm doc
+.PHONY: all clean install rpm doc deploy rpm-install
 
 ifeq ($(VERSION),)
     VERSION = *DEVELOPMENT SNAPSHOT*
@@ -8,10 +8,17 @@ BINDIR ?= /usr/bin
 MANDIR ?= /usr/share/man
 UNITDIR ?= /usr/lib/systemd/system
 KEYID ?= BE5096C665CA4595AF11DAB010CD9FF74E4565ED
+ARCH := $(shell uname -m)
+ARCH_RPM_NAME := krenewd.$(ARCH).rpm
 
 all: krenewd
 
 doc: krenewd.1
+
+rpm: $(ARCH_RPM_NAME)
+
+rpm-install: rpm
+	zypper in "./$(ARCH_RPM_NAME)"
 
 clean:
 	rm -vf -- krenewd krenewd.1 *.rpm
@@ -25,13 +32,13 @@ krenewd.1: krenewd.md Makefile
 
 install: krenewd krenewd.1 krenewd@.service Makefile
 	mkdir -p "$(BINDIR)" "$(MANDIR)/man1" "$(UNITDIR)"
-	install krenewd "$(BINDIR)/"
-	install -m 644 krenewd@.service "$(UNITDIR)/krenewd@.service"
-	install -m 644 krenewd.1 "$(MANDIR)/man1/krenewd.1"
+	install -m 755 krenewd "$(BINDIR)/"
+	install -m 644 krenewd@.service "$(UNITDIR)/"
+	install -m 644 krenewd.1 "$(MANDIR)/man1/"
 
-rpm: krenewd.cpp krenewd@.service Makefile krenewd.spec krenewd.md
-	@if [ -z "$(RPMDIR)" ]; then \
-		easy-rpm.sh --name krenewd --outdir . --plain -- $^; \
-	else \
-		easy-rpm.sh --name krenewd --outdir "$(RPMDIR)" --sign --keyid "$(KEYID)" --inspect -- $^; \
-	fi
+deploy: $(ARCH_RPM_NAME)
+	deploy-rpm.sh --infile=krenewd.src.rpm --outdir="$(RPMDIR)" --keyid="$(KEYID)" --srpm
+	deploy-rpm.sh --infile="$(ARCH_RPM_NAME)" --outdir="$(RPMDIR)" --keyid="$(KEYID)"
+
+$(ARCH_RPM_NAME) krenewd.src.rpm: krenewd.cpp krenewd@.service Makefile krenewd.spec krenewd.md
+	easy-rpm.sh --name krenewd --outdir . --plain -- $^
