@@ -5,7 +5,7 @@ Distribution:   openSUSE
 License:        GPLv3
 URL:            https://www.brennecke-it.net
 
-BuildRequires:  clang, systemd-devel
+BuildRequires:  clang, systemd-devel, pandoc
 Requires:       krb5-client, systemd
 
 %description
@@ -18,7 +18,7 @@ krenewd is a versatile daemon designed to automate the renewal of Kerberos ticke
 make %{?_smp_mflags} VERSION="Version %{version}"
 
 %install
-make install DESTDIR="%{buildroot}" UNITDIR="%{buildroot}%{_unitdir}"
+make install BINDIR=%{buildroot}%{_bindir} UNITDIR="%{buildroot}%{_unitdir}" MANDIR="%{buildroot}%{_mandir}"
 
 %post
 systemctl daemon-reload
@@ -27,9 +27,11 @@ systemctl daemon-reload
 if [ $1 -eq 0 ]; then
     systemctl daemon-reload
 fi
+rm -vf /usr/local/bin/krenewd
 
 %files
 %{_bindir}/krenewd
 %{_unitdir}/krenewd@.service
+%{_mandir}/man1/krenewd.1.gz
 
 %changelog
