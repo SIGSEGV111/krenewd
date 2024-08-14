@@ -5,7 +5,7 @@ krenewd - Kerberos ticket refresh daemon
 krenewd [OPTION]...
 
 # DESCRIPTION
-**krenewd** is a daemon designed to automatically renew Kerberos tickets. It monitors specified session or process IDs and renews Kerberos tickets at defined intervals, utilizing a specified keytab file if provided. If no keytab file is specified, it follows an auto-detection sequence to find an existing keytab.
+**krenewd** is a daemon designed to automatically renew Kerberos tickets. It monitors specified session or process IDs and renews Kerberos tickets at defined intervals, utilizing a specified keytab file if provided. If no keytab file is specified, it follows an auto-detection sequence to find an existing keytab. The keytab is only used if required -that is- if no existing ticket can be refreshed.
 
 # OPTIONS
 -h, --help
@@ -70,7 +70,7 @@ Written by Simon Brennecke.
 Copyright (C) 2024 Simon Brennecke, licensed under GNU GPL version 3 or later.
 
 # SEE ALSO
-*kerberos*(1), *kinit*(1), *klist*(1), *kdestroy*(1)
+*kerberos*(7), *kinit*(1), *klist*(1), *kdestroy*(1)
 
 # NOTES
 This manual page was written for the krenewd version 20240814011414. The behavior may differ in other versions.
