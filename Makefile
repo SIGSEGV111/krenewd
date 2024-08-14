@@ -7,6 +7,7 @@ endif
 BINDIR ?= /usr/bin
 MANDIR ?= /usr/share/man
 UNITDIR ?= /usr/lib/systemd/system
+KEYID ?= BE5096C665CA4595AF11DAB010CD9FF74E4565ED
 
 all: krenewd
 
@@ -28,7 +29,7 @@ install: krenewd krenewd.1 krenewd@.service Makefile
 
 rpm: krenewd.cpp krenewd@.service Makefile krenewd.spec krenewd.md
 	@if [ -z "$(RPMDIR)" ]; then \
-		easy-rpm.sh --name krenewd --outdir . --plain --sign --keyid BE5096C665CA4595AF11DAB010CD9FF74E4565ED --inspect --debug -- $^; \
+		easy-rpm.sh --name krenewd --outdir . --plain --sign --keyid "$(KEYID)" --inspect --debug -- $^; \
 	else \
-		easy-rpm.sh --name krenewd --outdir "$(RPMDIR)" --sign --keyid BE5096C665CA4595AF11DAB010CD9FF74E4565ED --inspect --debug -- $^; \
+		easy-rpm.sh --name krenewd --outdir "$(RPMDIR)" --sign --keyid "$(KEYID)" --inspect --debug -- $^; \
 	fi
