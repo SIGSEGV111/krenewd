@@ -21,6 +21,7 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <pwd.h>
+#include <krb5.h>
 
 using namespace el1::io::types;
 using namespace el1::io::collection::list;
@@ -33,6 +34,52 @@ using namespace el1::system::time;
 using namespace el1::system::task;
 
 static bool verbose = false;
+
+static TString GetKerberosTicketCache()
+{
+	krb5_context context;
+	krb5_error_code retval;
+	EL_ERROR(retval = krb5_init_context(&context) != 0, TException, TString::Format("Error initializing Kerberos context: %d", retval));
+
+	try
+	{
+		krb5_ccache cache;
+		EL_ERROR(retval = krb5_cc_default(context, &cache) != 0, TException, TString::Format("Error getting default credential cache: %s", krb5_get_error_message(context, retval)));
+
+		try
+		{
+			const char* cache_name = krb5_cc_get_name(context, cache);
+			EL_ERROR(cache_name == nullptr, TException, TString::Format("Error retrieving ticket cache name: %s", krb5_get_error_message(context, retval)));
+
+			const char* cache_type = krb5_cc_get_type(context, cache);
+			EL_ERROR(cache_type == nullptr, TException, TString::Format("Error retrieving ticket cache type: %s", krb5_get_error_message(context, retval)));
+
+			TString cache_fullname = TString::Format("%s%s", cache_type, cache_name);
+			krb5_cc_close(context, cache);
+			krb5_free_context(context);
+
+			return cache_fullname;
+		}
+		catch(...)
+		{
+			krb5_cc_close(context, cache);
+			throw;
+		}
+	}
+	catch(...)
+	{
+		krb5_free_context(context);
+		throw;
+	}
+}
+
+static usys_t DJB2(const TString& str) {
+	usys_t hash = 5381;
+	for (auto c : str.chars) {
+		hash = ((hash << 5) + hash) + c.code; // hash * 33 + c
+	}
+	return hash;
+}
 
 static bool AcquireNewTicket(const TString& principal, const TPath& keytab)
 {
@@ -205,6 +252,12 @@ int main(int argc, char* argv[])
 		if(trace)
 			EnvironmentVariables().Set("KRB5_TRACE", "/dev/stderr");
 
+		const TString ticket_cache_name = GetKerberosTicketCache();
+		const usys_t ticket_cache_hash = DJB2(ticket_cache_name);
+
+		if(verbose)
+			term.Print("detected ticket-cache: %s\n", ticket_cache_name);
+
 		mlockall(MCL_CURRENT|MCL_FUTURE);
 		EL_SYSERR(umask(0077));
 		const uid_t uid = EL_SYSERR(getuid());
@@ -222,7 +275,9 @@ int main(int argc, char* argv[])
 		if(verbose) term.Print("running as user %s (%d)\n", pw->pw_name, uid);
 		if(verbose && !keytab.IsEmpty()) term.Print("using keytab %q\n", (const char*)keytab);
 		EL_ERROR(!IsAlive(master_pid, session_id), TException, "master process or session is not alive");
-		TFile lock_file(TString::Format("/tmp/krenewd-%s-%s-%d.lock", username_safe, principal_safe, master_pid), TAccess::RW, ECreateMode::NX);
+		const TPath lock_file_path = TString::Format("/tmp/krenewd-%s-%s-%x.lock", username_safe, principal_safe, ticket_cache_hash);
+		if(verbose) term.Print("using lock-file: %s\n", lock_file_path.ToString());
+		TFile lock_file(lock_file_path, TAccess::RW, ECreateMode::NX);
 		lock_acquired = no_lock || TryAcquireLock(lock_file);
 
 		if(no_passive && !lock_acquired)
