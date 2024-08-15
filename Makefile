@@ -30,15 +30,17 @@ krenewd: krenewd.cpp Makefile
 krenewd.1: krenewd.md Makefile
 	pandoc -s -f markdown -t man krenewd.md -o krenewd.1
 
-install: krenewd krenewd.1 krenewd@.service Makefile
+install: krenewd krenewd.pam krenewd.1 krenewd@.service Makefile
 	mkdir -p "$(BINDIR)" "$(MANDIR)/man1" "$(UNITDIR)"
 	install -m 755 krenewd "$(BINDIR)/"
+	install -m 755 krenewd.pam "$(BINDIR)/"
 	install -m 644 krenewd@.service "$(UNITDIR)/"
 	install -m 644 krenewd.1 "$(MANDIR)/man1/"
 
 deploy: $(ARCH_RPM_NAME)
+	ensure-git-clean.sh
 	deploy-rpm.sh --infile=krenewd.src.rpm --outdir="$(RPMDIR)" --keyid="$(KEYID)" --srpm
 	deploy-rpm.sh --infile="$(ARCH_RPM_NAME)" --outdir="$(RPMDIR)" --keyid="$(KEYID)"
 
-$(ARCH_RPM_NAME) krenewd.src.rpm: krenewd.cpp krenewd@.service Makefile krenewd.spec krenewd.md
+$(ARCH_RPM_NAME) krenewd.src.rpm: krenewd.cpp krenewd.pam krenewd@.service Makefile krenewd.spec krenewd.md
 	easy-rpm.sh --name krenewd --outdir . --plain -- $^

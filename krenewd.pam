@@ -1,0 +1,5 @@
+#!/bin/bash -eu
+if [[ -v XDG_SESSION_ID ]]; then
+	set -x
+	exec /usr/sbin/runuser -u "$PAM_USER" -- /usr/bin/krenewd "$@" --session-id "$XDG_SESSION_ID"
+fi
