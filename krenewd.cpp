@@ -282,7 +282,7 @@ int main(int argc, char* argv[])
 
 		if(no_passive && !lock_acquired)
 		{
-			if(verbose) term.Print("lock already taken - exiting\n");
+			if(verbose) term.Print("lock already taken and passive mode disabled => exiting\n");
 			throw shutdown_t();
 		}
 
@@ -316,11 +316,11 @@ int main(int argc, char* argv[])
 					TFiber::Sleep(renew_interval);
 				}
 
-				if(verbose) term.Print("master process died - exiting\n");
+				if(verbose) term.Print("master process terminated => exiting\n");
 			}
 			catch(shutdown_t)
 			{
-				if(verbose) term.Print("received shutdown signal - exiting\n");
+				if(verbose) term.Print("received shutdown signal => exiting\n");
 			}
 		}
 	}
