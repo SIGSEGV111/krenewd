@@ -8,7 +8,7 @@ BINDIR ?= /usr/bin
 MANDIR ?= /usr/share/man
 UNITDIR ?= /usr/lib/systemd/system
 KEYID ?= BE5096C665CA4595AF11DAB010CD9FF74E4565ED
-ARCH := $(shell uname -m)
+ARCH ?= $(shell rpm --eval '%{_target_cpu}')
 ARCH_RPM_NAME := krenewd.$(ARCH).rpm
 
 all: krenewd
@@ -28,9 +28,9 @@ krenewd: krenewd.cpp Makefile
 	./krenewd --version
 
 krenewd.1: krenewd.md Makefile
-	pandoc -s -f markdown -t man krenewd.md -o krenewd.1
+	go-md2man < krenewd.md > krenewd.1
 
-install: krenewd krenewd.pam krenewd.1 krenewd@.service Makefile
+install: krenewd.1 krenewd krenewd.pam krenewd@.service Makefile
 	mkdir -p "$(BINDIR)" "$(MANDIR)/man1" "$(UNITDIR)"
 	install -m 755 krenewd "$(BINDIR)/"
 	install -m 755 krenewd.pam "$(BINDIR)/"
@@ -43,4 +43,4 @@ deploy: $(ARCH_RPM_NAME)
 	deploy-rpm.sh --infile="$(ARCH_RPM_NAME)" --outdir="$(RPMDIR)" --keyid="$(KEYID)"
 
 $(ARCH_RPM_NAME) krenewd.src.rpm: krenewd.cpp krenewd.pam krenewd@.service Makefile krenewd.spec krenewd.md
-	easy-rpm.sh --name krenewd --outdir . --plain -- $^
+	easy-rpm.sh --name krenewd --outdir . --plain --arch "$(ARCH)" -- $^

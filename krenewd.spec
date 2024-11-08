@@ -5,7 +5,7 @@ Distribution:   openSUSE
 License:        GPLv3
 URL:            https://www.brennecke-it.net
 
-BuildRequires:  clang, systemd-devel, pandoc-cli, krb5-devel, easy-rpm
+BuildRequires:  clang, systemd-devel, go-md2man, krb5-devel, easy-rpm
 Requires:       krb5-client, systemd, sed
 
 %description
