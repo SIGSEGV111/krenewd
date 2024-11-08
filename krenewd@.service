@@ -6,7 +6,7 @@ StartLimitBurst=2147483647
 
 [Service]
 Type=simple
-ExecStart=/usr/local/bin/krenewd --master 0 --destroy --foreground --verbose
+ExecStart=/usr/bin/krenewd --master 0 --destroy --foreground --verbose
 User=%I
 Restart=always
 RestartSec=15

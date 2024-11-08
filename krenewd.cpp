@@ -129,8 +129,12 @@ static bool IsAlive(const pid_t master_pid, const TString& session_id)
 static void CloseStdio()
 {
 	// close stdin and stdout
+
 	close(0);
 	EL_SYSERR(dup2(2, 1));
+
+	el1::io::text::terminal::stdin.handle.Close();
+	el1::io::text::terminal::stdout.handle = el1::io::text::terminal::stderr.handle;
 }
 
 static bool TryAcquireLock(TFile& lock_file)
