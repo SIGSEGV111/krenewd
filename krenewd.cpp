@@ -163,10 +163,16 @@ static TPath FindKeytab(const TString& username, const TPath& home_dir)
 	if( (p = TString::Format("/etc/%s.keytab", username)).Exists() )
 		return p;
 
+	if( (p = home_dir + ".krenewd/krb5.keytab").Exists() )
+		return p;
+
 	if( (p = home_dir + TString::Format("%s.keytab", username)).Exists() )
 		return p;
 
 	if( (p = home_dir + "krb5.keytab").Exists() )
+		return p;
+
+	if( (p = home_dir + ".krb5.keytab").Exists() )
 		return p;
 
 	if( username == "root" && (p = "/etc/krb5.keytab").Exists() )
@@ -219,7 +225,7 @@ int main(int argc, char* argv[])
 			ParseCmdlineArguments(argc, argv,
 				TFlagArgument(&show_version, 'V', "version", "", "Show copyright and version information and exit."),
 				TStringArgument(&session_id, 's', "session-id", "XDG_SESSION_ID", true, false, "Specify the login session ID to monitor. Default is the current session. (XDG_SESSION_ID)"),
-				TIntegerArgument(&master_pid, 'm', "master", "", true, false, "Specify the process ID to monitor. A value of '0' disables the monitoring. If no process & session IDs are specified, then the default is to monitor the parent process. This setting, if specified, overrules 'session-id'."),
+				TIntegerArgument(&master_pid, 'm', "master", "KRENEWD_MASTER", true, false, "Specify the process ID to monitor. A value of '0' disables the monitoring. If no process & session IDs are specified, then the default is to monitor the parent process. This setting, if specified, overrules 'session-id'."),
 				TIntegerArgument(&i, 'i', "interval", "KRENEWD_INTERVAL", true, false, "Set the time interval (in seconds) between ticket renewals. (KRENEWD_INTERVAL)"),
 				TFlagArgument(&destroy, 'd', "destroy", "KRENEWD_DESTROY", "Destroy the ticket on exit, but only if the lock was acquired during the session (or 'no-lock' was specified). (KRENEWD_DESTROY)"),
 				TFlagArgument(&no_passive, 'p', "no-passive", "KRENEWD_NOPASSIVE", "Exit immediately if the lock cannot be acquired. (KRENEWD_NOPASSIVE)"),
