@@ -27,8 +27,8 @@ krenewd: krenewd.cpp Makefile
 	clang++ -Wall -Wextra -std=gnu++20 -flto -Os -lsystemd -lkrb5 "-DVERSION=\"$(VERSION)\"" -o $@ krenewd.cpp
 	./krenewd --version
 
-krenewd.1: krenewd.md Makefile
-	go-md2man < krenewd.md > krenewd.1
+krenewd.1: README.md Makefile
+	go-md2man < README.md > krenewd.1
 
 install: krenewd.1 krenewd krenewd.pam krenewd@.service Makefile
 	mkdir -p "$(BINDIR)" "$(MANDIR)/man1" "$(UNITDIR)"
@@ -42,5 +42,5 @@ deploy: $(ARCH_RPM_NAME)
 	deploy-rpm.sh --infile=krenewd.src.rpm --outdir="$(RPMDIR)" --keyid="$(KEYID)" --srpm
 	deploy-rpm.sh --infile="$(ARCH_RPM_NAME)" --outdir="$(RPMDIR)" --keyid="$(KEYID)"
 
-$(ARCH_RPM_NAME) krenewd.src.rpm: krenewd.cpp krenewd.pam krenewd@.service Makefile krenewd.spec krenewd.md
+$(ARCH_RPM_NAME) krenewd.src.rpm: krenewd.cpp krenewd.pam krenewd@.service Makefile krenewd.spec README.md
 	easy-rpm.sh --name krenewd --outdir . --plain --arch "$(ARCH)" -- $^
