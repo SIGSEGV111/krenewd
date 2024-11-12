@@ -5,8 +5,8 @@ StartLimitIntervalSec=0
 StartLimitBurst=2147483647
 
 [Service]
-Type=simple
-ExecStart=/usr/bin/krenewd --master 0 --destroy --foreground --verbose
+Type=forking
+ExecStart=/usr/bin/krenewd --master 0 --destroy --verbose
 User=%I
 Restart=always
 RestartSec=15
