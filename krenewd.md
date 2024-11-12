@@ -52,6 +52,9 @@ Specify a custom path for the keytab file. If not provided, the keytab file will
 	4. `$HOME/krb5.keytab`  
 	5. `$HOME/.krb5.keytab`  
 	6. `/etc/krb5.keytab`  
+	
+**-J, --journal**
+When specified krenewd will also send all log messages to systemd-journal *in addition* to logging to stderr'.
 
 # ENVIRONMENT VARIABLES
 The following environment variables can be set to provide default values for command-line options:
@@ -66,6 +69,7 @@ The following environment variables can be set to provide default values for com
 - **KRENEWD_NOLOCK**: If set, allows multiple instances of the daemon to run simultaneously, mirroring the `--no-lock` option.
 - **KRENEWD_NOBLOCK**: If set, enables the `--no-block` behavior to proceed without waiting if initial ticket acquisition fails.
 - **KRENEWD_KEYTAB**: Sets a default keytab file path for authentication if `--keytab` is not specified.
+- **KRENEWD_JOURNAL**: If set, krenewd will also send all log messages to systemd-journal *in addition* to logging to stderr'.
 
 # EXAMPLES
 1. To run the daemon from your profile or bashrc, include the `--no-block` option:  

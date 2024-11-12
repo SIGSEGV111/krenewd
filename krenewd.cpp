@@ -15,6 +15,7 @@
 
 #include <el1/el1.cpp>
 #include <systemd/sd-login.h>
+#include <systemd/sd-journal.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/file.h>
@@ -34,6 +35,11 @@ using namespace el1::system::time;
 using namespace el1::system::task;
 
 static bool verbose = false;
+static s64_t master_pid = -1;
+static TString session_id;
+static TString principal;
+static TString username;
+static bool journal = false;
 
 static TString GetKerberosTicketCache()
 {
@@ -73,6 +79,30 @@ static TString GetKerberosTicketCache()
 	}
 }
 
+static void LogMessage(TString msg)
+{
+	if(journal)
+		sd_journal_send(
+			(TString("MESSAGE=") + msg).MakeCStr().get(),
+			"PRIORITY=%i", LOG_INFO,
+			"PID=%d", getpid(),
+			"PPID=%d", getppid(),
+			"SESSION=%s", session_id.MakeCStr().get(),
+			"MASTER_PID=%d", master_pid,
+			"PRINCIPAL=%s", principal.MakeCStr().get(),
+			"USER=%s", username.MakeCStr().get(),
+			nullptr
+		);
+
+	term.Print(std::move(msg));
+}
+
+template<typename ... R>
+static void LogMessage(TString format, R&& ... r)
+{
+	LogMessage(TString::Format(std::move(format), std::forward<R>(r) ...));
+}
+
 static usys_t DJB2(const TString& str) {
 	usys_t hash = 5381;
 	for (auto c : str.chars) {
@@ -84,11 +114,11 @@ static usys_t DJB2(const TString& str) {
 static bool AcquireNewTicket(const TString& principal, const TPath& keytab)
 {
 	EL_ERROR(keytab.IsEmpty(), TException, "no keytab specified/found - cannot acquire new ticket");
-	if(verbose) term.Print("requesting new ticket from KDC ... ");
+	if(verbose) LogMessage("requesting new ticket from KDC ... ");
 	TString stdout, stderr;
 	const bool status = TProcess::ExecuteWithStatus("/usr/bin/kinit", { "-k", "-t", keytab, principal }, nullptr, &stdout, &stderr) == 0;
-	if(verbose) term.Print(status ? "OK\n" : "FAILED\n");
-	if(verbose || !status) term.Print("stdout:\n%s\nstderr:\n%s\n", stdout, stderr);
+	if(verbose) LogMessage(status ? "OK\n" : "FAILED\n");
+	if(verbose || !status) LogMessage("stdout:\n%s\nstderr:\n%s\n", stdout, stderr);
 	return status;
 }
 
@@ -104,9 +134,9 @@ static bool IsSessionAlive(const TString& session_id)
 
 static bool RenewTicket(const TString& principal)
 {
-	if(verbose) term.Print("renewing ticket ... ");
+	if(verbose) LogMessage("renewing ticket ... ");
 	const bool status = TProcess::ExecuteWithStatus("/usr/bin/kinit", { "-R", principal }) == 0;
-	if(verbose) term.Print(status ? "OK\n" : "FAILED\n");
+	if(verbose) LogMessage(status ? "OK\n" : "FAILED\n");
 	return status;
 }
 
@@ -139,19 +169,19 @@ static void CloseStdio()
 
 static bool TryAcquireLock(TFile& lock_file)
 {
-	if(verbose) term.Print("trying to acquire lock ... ");
+	if(verbose) LogMessage("trying to acquire lock ... ");
 	if(flock(lock_file.Handle(), LOCK_EX|LOCK_NB) == -1)
 	{
 		if(errno == EWOULDBLOCK)
 		{
-			if(verbose) term.Print("already taken\n");
+			if(verbose) LogMessage("already taken\n");
 			return false;
 		}
 		EL_THROW(TSyscallException, errno);
 	}
 	else
 	{
-		if(verbose) term.Print("OK\n");
+		if(verbose) LogMessage("OK\n");
 		return true;
 	}
 }
@@ -201,9 +231,6 @@ int main(int argc, char* argv[])
 	bool no_block = false;
 	bool trace = false;
 	int exit_code = 0;
-	s64_t master_pid = -1;
-	TString session_id;
-	TString principal;
 	TTime renew_interval;
 
 	try
@@ -234,7 +261,8 @@ int main(int argc, char* argv[])
 				TFlagArgument(&trace, 't', "trace", "KRENEWD_TRACE", "Enable trace output from kinit for debugging. (KRENEWD_TRACE)"),
 				TFlagArgument(&no_lock, 'l', "no-lock", "KRENEWD_NOLOCK", "Ignore the singleton lock, allowing multiple instances to run simultaneously. (KRENEWD_NOLOCK)"),
 				TFlagArgument(&no_block, 'b', "no-block", "KRENEWD_NOBLOCK", "Proceed without blocking if the initial ticket acquisition fails. (KRENEWD_NOBLOCK)"),
-				TPathArgument(&keytab, 'k', "keytab", "KRENEWD_KEYTAB", true, false, "Specify the keytab file to use for authentication. If not specified, the keytab will be auto-detected. (KRENEWD_KEYTAB)")
+				TPathArgument(&keytab, 'k', "keytab", "KRENEWD_KEYTAB", true, false, "Specify the keytab file to use for authentication. If not specified, the keytab will be auto-detected. (KRENEWD_KEYTAB)"),
+				TFlagArgument(&journal, 'J', "journal", "KRENEWD_JOURNAL", "When specified krenewd will also send all log messages to systemd-journal *in addition* to logging to stderr' (KRENEWD_JOURNAL)")
 			);
 
 			if(show_version)
@@ -252,11 +280,11 @@ int main(int argc, char* argv[])
 
 			if(master_pid > 0)
 			{
-				term.Print("monitoring process %d\n", master_pid);
+				LogMessage("monitoring process %d\n", master_pid);
 				session_id = "";
 			}
 
-			if(session_id.Length() > 0 && verbose) term.Print("monitoring session %q\n", session_id.MakeCStr().get());
+			if(session_id.Length() > 0 && verbose) LogMessage("monitoring session %q\n", session_id.MakeCStr().get());
 		}
 
 		if(trace)
@@ -266,14 +294,14 @@ int main(int argc, char* argv[])
 		const usys_t ticket_cache_hash = DJB2(ticket_cache_name);
 
 		if(verbose)
-			term.Print("detected ticket-cache: %s\n", ticket_cache_name);
+			LogMessage("detected ticket-cache: %s\n", ticket_cache_name);
 
 		mlockall(MCL_CURRENT|MCL_FUTURE);
 		EL_SYSERR(umask(0077));
 		const uid_t uid = EL_SYSERR(getuid());
 		struct passwd* pw = getpwuid(uid);
 		EL_ERROR(pw == nullptr, TException, TString::Format("unable to lookup username for current user with UID=%d in password database", uid));
-		const TString username = pw->pw_name;
+		username = pw->pw_name;
 		const TString fqdn = TFile::ReadText("/etc/hostname");
 		principal = uid == 0 ? TString::Format("host/%s", fqdn) : username;
 		TString username_safe = username;
@@ -282,17 +310,17 @@ int main(int argc, char* argv[])
 		username_safe.Replace("/", "_");
 		if(keytab.IsEmpty())
 			keytab = FindKeytab(username, pw->pw_dir);
-		if(verbose) term.Print("running as user %s (%d)\n", pw->pw_name, uid);
-		if(verbose && !keytab.IsEmpty()) term.Print("using keytab %q\n", (const char*)keytab);
+		if(verbose) LogMessage("running as user %s (%d)\n", pw->pw_name, uid);
+		if(verbose && !keytab.IsEmpty()) LogMessage("using keytab %q\n", (const char*)keytab);
 		EL_ERROR(!IsAlive(master_pid, session_id), TException, "master process or session is not alive");
 		const TPath lock_file_path = TString::Format("/tmp/krenewd-%s-%s-%x.lock", username_safe, principal_safe, ticket_cache_hash);
-		if(verbose) term.Print("using lock-file: %s\n", lock_file_path.ToString());
+		if(verbose) LogMessage("using lock-file: %s\n", lock_file_path.ToString());
 		TFile lock_file(lock_file_path, TAccess::RW, ECreateMode::NX);
 		lock_acquired = no_lock || TryAcquireLock(lock_file);
 
 		if(no_passive && !lock_acquired)
 		{
-			if(verbose) term.Print("lock already taken and passive mode disabled => exiting\n");
+			if(verbose) LogMessage("lock already taken and passive mode disabled => exiting\n");
 			throw shutdown_t();
 		}
 
@@ -309,7 +337,7 @@ int main(int argc, char* argv[])
 
 			try
 			{
-				if(verbose) term.Print("entering normal operation\n");
+				if(verbose) LogMessage("entering normal operation\n");
 				TFiber::Sleep(renew_interval);
 				while(IsAlive(master_pid, session_id))
 				{
@@ -326,11 +354,11 @@ int main(int argc, char* argv[])
 					TFiber::Sleep(renew_interval);
 				}
 
-				if(verbose) term.Print("master process terminated => exiting\n");
+				if(verbose) LogMessage("master process terminated => exiting\n");
 			}
 			catch(shutdown_t)
 			{
-				if(verbose) term.Print("received shutdown signal => exiting\n");
+				if(verbose) LogMessage("received shutdown signal => exiting\n");
 			}
 		}
 	}
