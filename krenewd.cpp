@@ -59,10 +59,10 @@ static TString GetKerberosTicketCache()
 
 			const char* cstr_cache_type = krb5_cc_get_type(context, cache);
 			EL_ERROR(cstr_cache_type == nullptr, TException, TString::Format("Error retrieving ticket cache type: %s", krb5_get_error_message(context, retval)));
-			
+
 			TString cache_name = cstr_cache_name;
 			TString cache_type = cstr_cache_type;
-			
+
 			if(cache_type == "DIR")
 			{
 				TPath p = cache_name;
@@ -92,17 +92,24 @@ static TString GetKerberosTicketCache()
 static void LogMessage(TString msg)
 {
 	if(journal)
+	{
+		auto cstr_msg = msg.MakeCStr();
+		auto cstr_session_id = session_id.MakeCStr();
+		auto cstr_principal = principal.MakeCStr();
+		auto cstr_username = username.MakeCStr();
+
 		sd_journal_send(
-			(TString("MESSAGE=") + msg).MakeCStr().get(),
+			"MESSAGE=%s", cstr_msg.get(),
 			"PRIORITY=%i", LOG_INFO,
 			"PID=%d", getpid(),
 			"PPID=%d", getppid(),
-			"SESSION=%s", session_id.MakeCStr().get(),
-			"MASTER_PID=%d", master_pid,
-			"PRINCIPAL=%s", principal.MakeCStr().get(),
-			"USER=%s", username.MakeCStr().get(),
-			nullptr
+			"SESSION=%s", cstr_session_id.get(),
+			"MASTER_PID=%d", (unsigned)master_pid,
+			"PRINCIPAL=%s", cstr_principal.get(),
+			"USER=%s", cstr_username.get(),
+			NULL
 		);
+	}
 
 	term.Print(std::move(msg));
 }
