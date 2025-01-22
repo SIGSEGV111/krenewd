@@ -86,7 +86,7 @@ Boolean variables can take the following values: `true`/`false`, `yes`/`no`, `en
 # EXAMPLES
 - **Shell profile/bashrc**  
 	To run the daemon from your profile or bashrc, include the `--no-block` and `--journal` options:  
-		`krenewd --no-block --verbose --journal >/dev/null 2>&1 </dev/null`  
+		`krenewd --no-block --verbose --journal >/dev/null 2>\&1 </dev/null`  
 	View log messages via:  
 		`journalctl --user _COMM=krenewd`
 
