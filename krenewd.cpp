@@ -13,7 +13,7 @@
 	along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <el1/el1.cpp>
+#include <el1/el1.hpp>
 #include <systemd/sd-login.h>
 #include <systemd/sd-journal.h>
 #include <unistd.h>
@@ -23,12 +23,14 @@
 #include <sys/mman.h>
 #include <pwd.h>
 #include <krb5.h>
+#include <signal.h>
 
 using namespace el1::io::types;
 using namespace el1::io::collection::list;
 using namespace el1::io::text::string;
 using namespace el1::io::text::encoding::utf8;
 using namespace el1::io::text::terminal;
+using namespace el1::io::file;
 using namespace el1::error;
 using namespace el1::system::cmdline;
 using namespace el1::system::time;

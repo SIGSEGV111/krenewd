@@ -5,8 +5,8 @@ Distribution:   openSUSE
 License:        GPLv3
 URL:            https://www.brennecke-it.net
 
-BuildRequires:  clang, systemd-devel, go-md2man, krb5-devel, easy-rpm
-Requires:       krb5-client, systemd, sed
+BuildRequires:  clang, systemd-devel, go-md2man, krb5-devel, easy-rpm, el1
+Requires:       krb5-client, systemd, sed, el1
 
 %description
 krenewd is a versatile daemon designed to automate the renewal of Kerberos tickets, ensuring continuous authentication without manual intervention. It is particularly useful in environments where long-running processes need to maintain authenticated sessions over extended periods. krenewd includes a systemd service template, making it easy for system administrators to instantiate multiple daemon processes for various daemon users. This integration promotes easy management and deployment of kerberos across systems, enhancing security without burdening administrative resources.

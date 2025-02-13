@@ -24,7 +24,7 @@ clean:
 	rm -vf -- krenewd krenewd.1 *.rpm
 
 krenewd: krenewd.cpp Makefile
-	clang++ -v -fuse-ld=lld -Wall -Wextra -std=gnu++20 -flto=auto -Os -lsystemd -lz -lkrb5 "-DVERSION=\"$(VERSION)\"" -o krenewd krenewd.cpp
+	clang++ -fuse-ld=lld -Wall -Wextra -std=gnu++20 -flto=auto -Os -lsystemd -lel1 -lz -lkrb5 "-DVERSION=\"$(VERSION)\"" -o krenewd krenewd.cpp
 	./krenewd --version
 
 krenewd.1: README.md Makefile
