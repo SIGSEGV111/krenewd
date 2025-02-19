@@ -1,5 +1,12 @@
 .PHONY: all clean install rpm doc deploy rpm-install
 
+ARCH ?= $(shell rpm --eval '%{_target_cpu}')
+CXXFLAGS ?=
+
+ifeq ($(ARCH),x86_64)
+	CXXFLAGS += -march=x86-64-v2
+endif
+
 ifeq ($(VERSION),)
     VERSION = *DEVELOPMENT SNAPSHOT*
 endif
@@ -8,7 +15,6 @@ BINDIR ?= /usr/bin
 MANDIR ?= /usr/share/man
 UNITDIR ?= /usr/lib/systemd/system
 KEYID ?= BE5096C665CA4595AF11DAB010CD9FF74E4565ED
-ARCH ?= $(shell rpm --eval '%{_target_cpu}')
 ARCH_RPM_NAME := krenewd.$(ARCH).rpm
 
 all: krenewd
@@ -24,7 +30,7 @@ clean:
 	rm -vf -- krenewd krenewd.1 *.rpm
 
 krenewd: krenewd.cpp Makefile
-	clang++ -fuse-ld=lld -Wall -Wextra -std=gnu++20 -flto=auto -Os -lsystemd -lel1 -lz -lkrb5 "-DVERSION=\"$(VERSION)\"" -o krenewd krenewd.cpp
+	clang++ $(CXXFLAGS) -fuse-ld=lld -Wall -Wextra -std=gnu++20 -flto=auto -Os -lsystemd -lel1 -lz -lkrb5 "-DVERSION=\"$(VERSION)\"" -o krenewd krenewd.cpp
 	./krenewd --version
 
 krenewd.1: README.md Makefile
