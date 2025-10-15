@@ -8,7 +8,7 @@ ifeq ($(ARCH),x86_64)
 endif
 
 ifeq ($(VERSION),)
-    VERSION = *DEVELOPMENT SNAPSHOT*
+	VERSION = *DEVELOPMENT SNAPSHOT*
 endif
 
 BINDIR ?= /usr/bin
