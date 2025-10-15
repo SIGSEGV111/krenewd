@@ -1,4 +1,5 @@
-#!/bin/bash -eu
+#!/bin/bash -u
 if [[ -v XDG_SESSION_ID ]]; then
-	exec /usr/sbin/runuser -u "$PAM_USER" -- /usr/bin/krenewd "$@" --session-id "$XDG_SESSION_ID" >/dev/null 2>&1 </dev/null
+	/usr/sbin/runuser -u "$PAM_USER" -- /usr/bin/krenewd "$@" --session-id "$XDG_SESSION_ID" >/dev/null 2>&1 </dev/null
 fi
+exit 0
