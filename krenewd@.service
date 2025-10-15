@@ -1,5 +1,6 @@
 [Unit]
-Description=Kerberos Ticket Renewal Daemon for user %I
+Description=Kerberos Ticket Renewal Daemon for user %i
+Documentation=https://github.com/SIGSEGV111/krenewd
 After=network.target
 StartLimitIntervalSec=0
 StartLimitBurst=2147483647
@@ -7,7 +8,7 @@ StartLimitBurst=2147483647
 [Service]
 Type=forking
 ExecStart=/usr/bin/krenewd --master 0 --destroy --verbose
-User=%I
+User=%i
 Restart=always
 RestartSec=15
 WorkingDirectory=/tmp
