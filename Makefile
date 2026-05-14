@@ -45,7 +45,7 @@ install: krenewd.1 krenewd krenewd.pam krenewd@.service Makefile
 
 deploy: $(ARCH_RPM_NAME)
 	ensure-git-clean.sh
-	deploy-rpm.sh --infile=krenewd.src.rpm --outdir="$(RPMDIR)" --keyid="$(KEYID)" --srpm
+	deploy-rpm.sh --infile=krenewd.src.rpm --outdir="$(RPMDIR)" --keyid="$(KEYID)"
 	deploy-rpm.sh --infile="$(ARCH_RPM_NAME)" --outdir="$(RPMDIR)" --keyid="$(KEYID)"
 
 $(ARCH_RPM_NAME) krenewd.src.rpm: krenewd.cpp krenewd.pam krenewd@.service Makefile krenewd.spec README.md
