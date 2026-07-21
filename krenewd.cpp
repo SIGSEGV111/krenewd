@@ -249,6 +249,7 @@ int main(int argc, char* argv[])
 	bool no_lock = false;
 	bool no_block = false;
 	bool trace = false;
+	bool owns_ticket_cache = true;
 	int exit_code = 0;
 	TTime renew_interval;
 
@@ -361,11 +362,25 @@ int main(int argc, char* argv[])
 				TFiber::Sleep(5);
 		}
 
-		if(foreground || EL_SYSERR(fork()) == 0)
+		bool run_daemon = foreground;
+		if(!foreground)
 		{
-			if(!foreground)
+			const pid_t child_pid = EL_SYSERR(fork());
+			if(child_pid == 0)
+			{
 				EL_SYSERR(setsid());
+				run_daemon = true;
+			}
+			else
+			{
+				// The child owns the lock and the credential cache from here on.
+				// The parent must not destroy the ticket while reporting startup success.
+				owns_ticket_cache = false;
+			}
+		}
 
+		if(run_daemon)
+		{
 			try
 			{
 				if(verbose) LogMessage("entering normal operation\n");
@@ -402,7 +417,7 @@ int main(int argc, char* argv[])
 		exit_code = 1;
 	}
 
-	if((lock_acquired || no_lock) && destroy)
+	if(owns_ticket_cache && (lock_acquired || no_lock) && destroy)
 		TProcess::ExecuteWithStatus("/usr/bin/kdestroy", { "-p", principal });
 
 	return exit_code;
