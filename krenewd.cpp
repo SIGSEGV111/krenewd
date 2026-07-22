@@ -256,6 +256,8 @@ int main(int argc, char* argv[])
 	try
 	{
 		TPath keytab;
+		TPath lock_dir;
+		TPath lock_file_override;
 		{
 			s64_t i = 10 * 60 / 3;
 			bool show_version = false;
@@ -282,6 +284,8 @@ int main(int argc, char* argv[])
 				TFlagArgument(&no_lock, 'l', "no-lock", "KRENEWD_NOLOCK", "Ignore the singleton lock, allowing multiple instances to run simultaneously. (KRENEWD_NOLOCK)"),
 				TFlagArgument(&no_block, 'b', "no-block", "KRENEWD_NOBLOCK", "Proceed without blocking if the initial ticket acquisition fails. (KRENEWD_NOBLOCK)"),
 				TPathArgument(&keytab, 'k', "keytab", "KRENEWD_KEYTAB", true, false, "Specify the keytab file to use for authentication. If not specified, the keytab will be auto-detected. (KRENEWD_KEYTAB)"),
+				TPathArgument(&lock_dir, 0U, "lock-dir", "KRENEWD_LOCKDIR", true, false, "Specify the directory in which the singleton lock file is created. Ignored when lock-file is set. Default is /tmp. (KRENEWD_LOCKDIR)"),
+				TPathArgument(&lock_file_override, 0U, "lock-file", "KRENEWD_LOCKFILE", true, false, "Specify the exact singleton lock-file path. This takes precedence over lock-dir. (KRENEWD_LOCKFILE)"),
 				TFlagArgument(&journal, 'J', "journal", "KRENEWD_JOURNAL", "When specified krenewd will also send all log messages to systemd-journal *in addition* to logging to stderr' (KRENEWD_JOURNAL)"),
 				TStringArgument(&principal, 'P', "principal", "KRENEWD_PRINCIPAL", true, false, "Specify the ticket principal name. Default is the linux user account name. For the root user host/fqdn@domain is used instead. (KRENEWD_PRINCIPAL)")
 			);
@@ -345,7 +349,19 @@ int main(int argc, char* argv[])
 		TString principal_safe = principal;
 		principal_safe.Replace("/", "_");
 		username_safe.Replace("/", "_");
-		const TPath lock_file_path = TString::Format("/tmp/krenewd-%s-%s-%x.lock", username_safe, principal_safe, ticket_cache_hash);
+		TPath lock_file_path;
+		if(!lock_file_override.IsEmpty())
+		{
+			lock_file_path = lock_file_override;
+		}
+		else
+		{
+			if(lock_dir.IsEmpty())
+				lock_dir = "/tmp";
+
+			const TString lock_file_name = TString::Format("krenewd-%s-%s-%x.lock", username_safe, principal_safe, ticket_cache_hash);
+			lock_file_path = lock_dir + lock_file_name;
+		}
 		if(verbose) LogMessage("using lock-file: %q\n", lock_file_path.ToString());
 		TFile lock_file(lock_file_path, TAccess::RW, ECreateMode::NX);
 		lock_acquired = no_lock || TryAcquireLock(lock_file);

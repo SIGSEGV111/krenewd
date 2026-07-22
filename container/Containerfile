@@ -1,0 +1,11 @@
+FROM registry.opensuse.org/opensuse/tumbleweed:latest
+
+# Put the architecture-matching krenewd and el1 RPMs into container/rpms/ before
+# building. Additional private RPM dependencies can be placed there as well.
+COPY rpms/ /tmp/rpms/
+RUN zypper --non-interactive install krb5-client util-linux /tmp/rpms/*.rpm \
+	&& rm -rf /tmp/rpms \
+	&& zypper clean --all
+
+COPY entrypoint.sh /usr/local/sbin/krenewd-container-entrypoint
+ENTRYPOINT ["/usr/local/sbin/krenewd-container-entrypoint"]

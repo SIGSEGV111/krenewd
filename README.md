@@ -56,6 +56,12 @@ Specify a custom path for the keytab file. If not provided, the keytab file will
   5. `$HOME/.krb5.keytab`  
   6. `/etc/krb5.keytab`
 
+**--lock-dir=\<directory\>** (*KRENEWD_LOCKDIR*)  
+Create the singleton lock file in this directory. The lock file name is still derived from the user, principal and credential-cache name. This option is ignored when **lock-file** is set. Default is `/tmp`.
+
+**--lock-file=\<path\>** (*KRENEWD_LOCKFILE*)  
+Use this exact path for the singleton lock file. This takes precedence over **lock-dir** and is useful when the lock must live in the same runtime directory as a Kerberos credential cache.
+
 **-J, --journal** (*KRENEWD_JOURNAL*)  
 When specified, `krenewd` will send all log messages to the systemd journal *in addition to logging to stderr*.  
 `krenewd` uses structured logging. The following fields will be added to each message:  
@@ -81,6 +87,8 @@ Boolean variables can take the following values: `true`/`false`, `yes`/`no`, `en
   - **KRENEWD_NOLOCK** (boolean)  
   - **KRENEWD_NOBLOCK** (boolean)  
   - **KRENEWD_KEYTAB** (filename)  
+  - **KRENEWD_LOCKDIR** (directory)  
+  - **KRENEWD_LOCKFILE** (filename)  
   - **KRENEWD_JOURNAL** (boolean)
 
 # EXAMPLES
