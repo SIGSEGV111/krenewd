@@ -4,16 +4,8 @@ COPY brennecke-it.net_RootCA_20191208_EC.crt /etc/pki/trust/anchors/brennecke-it
 
 RUN zypper --non-interactive install ca-certificates \
 	&& update-ca-certificates \
-	&& rpm --import https://rpm.brennecke-it.net:8443/repodata/repomd.xml.key \
-	&& zypper ar \
-		--enable \
-		--no-refresh \
-		--gpgcheck-allow-unsigned-repo \
-		--no-keep-packages \
-		'https://rpm.brennecke-it.net:8443' \
-		brennecke-it.net \
-	&& zypper --non-interactive refresh brennecke-it.net \
-	&& zypper --non-interactive install \
+	&& zypper ar 'https://rpm.brennecke-it.net:8443/brennecke-it.net.repo' \
+	&& zypper --non-interactive --gpg-auto-import-keys install \
 		krenewd \
 		krb5-client \
 		util-linux \
