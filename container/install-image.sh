@@ -1,6 +1,10 @@
 #!/bin/bash
 set -u
 
+# RPM scriptlets run with a system PATH that does not normally include
+# /usr/local/bin. K3s installed by the upstream installer lives there.
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin${PATH:+:${PATH}}"
+
 readonly ARCH="$(uname -m)"
 readonly PACKAGE_NAME="krenewd-sidecar-image"
 readonly DATA_DIR="/usr/share/${PACKAGE_NAME}"
