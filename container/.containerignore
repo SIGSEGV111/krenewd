@@ -1,0 +1,8 @@
+*.oci
+*.image.tar
+*.image-ref
+*.rpm
+Makefile
+README.md
+install-image.sh
+krenewd-sidecar-image.spec

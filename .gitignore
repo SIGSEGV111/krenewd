@@ -1,3 +1,6 @@
 krenewd
 *.rpm
+*.rpm
+*.image-ref
+*.tar
 krenewd.1

@@ -1,0 +1,1 @@
+/opt/amp-bash-commons/build_image.sh
