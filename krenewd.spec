@@ -19,7 +19,7 @@ Requires:       /usr/sbin/runuser
 Requires(post): sed
 
 %description
-krenewd is a versatile daemon designed to automate the renewal of Kerberos tickets, ensuring continuous authentication without manual intervention. It is particularly useful in environments where long-running processes need to maintain authenticated sessions over extended periods. krenewd includes a systemd service template, making it easy for system administrators to instantiate multiple daemon processes for various daemon users. This integration promotes easy management and deployment of kerberos across systems, enhancing security without burdening administrative resources.
+krenewd is a daemon designed to automate the renewal of Kerberos tickets, ensuring continuous authentication without manual intervention. It is particularly useful in environments where long-running processes need to maintain authenticated sessions over extended periods. krenewd includes a systemd service template, making it easy for system administrators to instantiate multiple daemon processes for various daemon users.
 
 %prep
 %setup -q -n krenewd
