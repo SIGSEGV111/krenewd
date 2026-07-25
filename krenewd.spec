@@ -1,3 +1,5 @@
+%define el1_min_version 124
+
 Name:           krenewd
 Summary:        Kerberos Ticket Refresh Daemon
 Group:          System Environment/Daemons
@@ -6,12 +8,12 @@ License:        GPLv3
 URL:            https://www.brennecke-it.net
 
 BuildRequires:  clang
-BuildRequires:  el1 >= 109
+BuildRequires:  el1-devel >= %{el1_min_version}
 BuildRequires:  go-md2man
 BuildRequires:  lld
 BuildRequires:  pkgconfig(krb5)
 BuildRequires:  pkgconfig(libsystemd)
-Requires:       el1 >= 109
+Requires:       el1 >= %{el1_min_version}
 Requires:       krb5-client
 Requires:       /usr/sbin/runuser
 Requires(post): sed
