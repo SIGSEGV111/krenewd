@@ -1,12 +1,13 @@
 #!/bin/bash
 set -u
 
+readonly ARCH="$(uname -m)"
 readonly PACKAGE_NAME="krenewd-sidecar-image"
 readonly DATA_DIR="/usr/share/${PACKAGE_NAME}"
-readonly ARCHIVE="${DATA_DIR}/krenewd-sidecar.image.tar"
-readonly IMAGE_REF_FILE="${DATA_DIR}/krenewd-sidecar.image-ref"
+readonly ARCHIVE="${DATA_DIR}/krenewd-sidecar.${ARCH}.image.tar"
+readonly IMAGE_REF_FILE="${DATA_DIR}/krenewd-sidecar.${ARCH}.image-ref"
 readonly K3S_IMPORT_DIR="/var/lib/rancher/k3s/agent/images"
-readonly K3S_FALLBACK_ARCHIVE="${K3S_IMPORT_DIR}/krenewd-sidecar.image.tar"
+readonly K3S_FALLBACK_ARCHIVE="${K3S_IMPORT_DIR}/krenewd-sidecar.image.${ARCH}.tar"
 
 function log()
 {

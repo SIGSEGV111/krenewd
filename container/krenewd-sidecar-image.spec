@@ -19,10 +19,10 @@ install -d \
 	%{buildroot}%{_datadir}/krenewd-sidecar-image \
 	%{buildroot}%{_libexecdir}/krenewd-sidecar-image
 install -m 0644 \
-	krenewd-sidecar.image.tar \
+	krenewd-sidecar.%{_target_cpu}.image.tar \
 	%{buildroot}%{_datadir}/krenewd-sidecar-image/
 install -m 0644 \
-	krenewd-sidecar.image-ref \
+	krenewd-sidecar.%{_target_cpu}.image-ref \
 	%{buildroot}%{_datadir}/krenewd-sidecar-image/
 install -m 0755 \
 	install-image.sh \
@@ -41,8 +41,8 @@ fi
 
 %files
 %dir %{_datadir}/krenewd-sidecar-image
-%{_datadir}/krenewd-sidecar-image/krenewd-sidecar.image.tar
-%{_datadir}/krenewd-sidecar-image/krenewd-sidecar.image-ref
+%{_datadir}/krenewd-sidecar-image/krenewd-sidecar.%{_target_cpu}.image.tar
+%{_datadir}/krenewd-sidecar-image/krenewd-sidecar.%{_target_cpu}.image-ref
 %dir %{_libexecdir}/krenewd-sidecar-image
 %{_libexecdir}/krenewd-sidecar-image/install-image
 
