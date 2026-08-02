@@ -100,13 +100,13 @@ Boolean variables can take the following values: `true`/`false`, `yes`/`no`, `en
 
 - **Daemon accounts**  
 	To enable the service for a specific daemon user:  
-		`systemctl enable --now krenewd@USERNAME.service`  
-	Replace `USERNAME` with the daemon user name.  
+		`systemctl enable --now krenewd@UID.service`  
+	Replace `UID` with the actual POSIX UID of the daemons user account.  
 	Make sure to place a keytab at one of the search locations given in the **keytab** option.
 	The daemon user will then always have a valid ticket available.  
 	If writing a dependant service, ensure it starts after the `krenewd` service by including:  
-		`After=krenewd@USERNAME.service`  
-		`Requires=krenewd@USERNAME.service`
+		`After=krenewd@UID.service`  
+		`Requires=krenewd@UID.service`
 
 - **PAM integration**  
 	To enable `krenewd` automatically via PAM on login, add the following to `/etc/pam.d/common-session`:  

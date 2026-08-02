@@ -1,5 +1,5 @@
 [Unit]
-Description=Kerberos Ticket Renewal Daemon for user %i
+Description=Kerberos Ticket Renewal Daemon for UID %i
 Documentation=https://github.com/SIGSEGV111/krenewd
 After=network.target
 StartLimitIntervalSec=0
@@ -7,16 +7,22 @@ StartLimitBurst=2147483647
 
 [Service]
 Type=forking
-ExecStart=/usr/bin/krenewd --master 0 --destroy --verbose
+GuessMainPID=yes
+TimeoutStartSec=infinity
 User=%i
+WorkingDirectory=/
+RuntimeDirectory=krenewd/%i
+RuntimeDirectoryMode=0700
+Environment=KRB5CCNAME=DIR:/run/krenewd/%i/krb5cc
+ExecStartPre=/usr/bin/install -d -m 0700 /run/krenewd/%i/krb5cc
+ExecStart=/usr/bin/krenewd --master 0 --destroy --verbose --journal
 Restart=always
 RestartSec=15
-WorkingDirectory=/tmp
 UMask=0077
 
 # Security
-PrivateTmp=false
 NoNewPrivileges=true
+PrivateTmp=false
 
 [Install]
 WantedBy=multi-user.target
