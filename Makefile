@@ -16,7 +16,7 @@ BINDIR ?= /usr/bin
 MANDIR ?= /usr/share/man
 UNITDIR ?= /usr/lib/systemd/system
 LIBEXECDIR ?= /usr/libexec/krenewd
-NFSCONFDIR ?= /usr/lib/systemd/system/rpc-gssd.service.d
+NFSCONFDIR ?= /etc/nfs.conf.d
 KEYID ?= BE5096C665CA4595AF11DAB010CD9FF74E4565ED
 ARCH_RPM_NAME := krenewd.$(ARCH).rpm
 

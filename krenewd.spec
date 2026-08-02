@@ -30,7 +30,7 @@ krenewd is a daemon designed to automate the renewal of Kerberos tickets, ensuri
 make %{?_smp_mflags} VERSION="Version %{version}"
 
 %install
-make install BINDIR=%{buildroot}%{_bindir} UNITDIR="%{buildroot}%{_unitdir}" MANDIR="%{buildroot}%{_mandir}" LIBEXECDIR="%{buildroot}%{_libexecdir}/krenewd" NFSCONFDIR="%{buildroot}/usr/lib/systemd/system/rpc-gssd.service.d"
+make install BINDIR=%{buildroot}%{_bindir} UNITDIR="%{buildroot}%{_unitdir}" MANDIR="%{buildroot}%{_mandir}" LIBEXECDIR="%{buildroot}%{_libexecdir}/krenewd" NFSCONFDIR="%{buildroot}/etc/nfs.conf.d"
 
 %post
 if command -v systemctl >/dev/null 2>&1; then
@@ -60,8 +60,8 @@ fi
 %dir %{_libexecdir}/krenewd
 %{_libexecdir}/krenewd/krenewd-migrate-service-instances.sh
 %{_unitdir}/krenewd@.service
-%dir /usr/lib/systemd/system/rpc-gssd.service.d
-%config(noreplace) /usr/lib/systemd/system/rpc-gssd.service.d/krenewd.conf
+%dir /etc/nfs.conf.d
+%config(noreplace) /etc/nfs.conf.d/krenewd.conf
 %{_mandir}/man1/krenewd.1.gz
 
 %changelog
