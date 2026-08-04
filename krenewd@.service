@@ -14,7 +14,7 @@ WorkingDirectory=/
 RuntimeDirectory=krenewd/%i
 RuntimeDirectoryMode=0700
 Environment=KRB5CCNAME=DIR:/run/krenewd/%i/krb5cc
-EnvironmentFile=/etc/krenewd.conf
+EnvironmentFile=-/etc/krenewd.conf
 ExecStartPre=/usr/bin/install -d -m 0700 /run/krenewd/%i/krb5cc
 ExecStart=/usr/bin/krenewd --master 0 --destroy --verbose --journal
 Restart=always
