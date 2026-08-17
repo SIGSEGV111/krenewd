@@ -39,6 +39,17 @@ $(error unable to determine el1 version; build el1 first or install an el1-devel
 endif
 override EL1_VERSION := $(EL1_DETECTED_VERSION)
 
+ifneq ($(strip $(EL1_LIB_DIR)),)
+EL1_LIBRARY_LINK := $(EL1_LIB_DIR)/libel1.so
+else
+EL1_SYSTEM_LIB_DIR := $(strip $(shell pkg-config --variable=libdir el1 2>/dev/null))
+EL1_LIBRARY_LINK := $(EL1_SYSTEM_LIB_DIR)/libel1.so
+endif
+EL1_LIBRARY_FILE := $(realpath $(EL1_LIBRARY_LINK))
+ifeq ($(strip $(EL1_LIBRARY_FILE)),)
+$(error unable to resolve selected el1 library '$(EL1_LIBRARY_LINK)')
+endif
+
 EL1_CPPFLAGS := $(if $(EL1_INCLUDE_DIR),-I$(EL1_INCLUDE_DIR))
 EL1_LDFLAGS := $(if $(EL1_LIB_DIR),-L$(EL1_LIB_DIR))
 ifneq ($(EL1_LIB_DIR),)
@@ -65,6 +76,13 @@ NFSCONFDIR ?= /etc/nfs.conf.d
 KEYID ?= BE5096C665CA4595AF11DAB010CD9FF74E4565ED
 ARCH_RPM_NAME := krenewd.$(ARCH).rpm
 EL1_CONFIG_STAMP := gen/.el1-config
+EL1_CONFIG_KEY := $(EL1_INCLUDE_DIR)|$(EL1_LIB_DIR)|$(EL1_VERSION)|$(EL1_LIBRARY_FILE)
+EL1_PREVIOUS_CONFIG := $(strip $(shell cat "$(EL1_CONFIG_STAMP)" 2>/dev/null))
+ifneq ($(EL1_PREVIOUS_CONFIG),$(EL1_CONFIG_KEY))
+EL1_REBUILD_TRIGGER := FORCE
+else
+EL1_REBUILD_TRIGGER :=
+endif
 
 all: krenewd
 
@@ -83,10 +101,10 @@ FORCE:
 
 $(EL1_CONFIG_STAMP): FORCE
 	@mkdir -p "$(@D)"
-	@printf '%s\n' 'EL1_INCLUDE_DIR=$(EL1_INCLUDE_DIR)' 'EL1_LIB_DIR=$(EL1_LIB_DIR)' 'EL1_VERSION=$(EL1_VERSION)' > "$@.tmp"
+	@printf '%s\n' '$(EL1_CONFIG_KEY)' > "$@.tmp"
 	@if test -f "$@" && cmp -s "$@.tmp" "$@"; then rm -f "$@.tmp"; else mv -f "$@.tmp" "$@"; fi
 
-krenewd: krenewd.cpp Makefile $(EL1_CONFIG_STAMP)
+krenewd: krenewd.cpp Makefile $(EL1_CONFIG_STAMP) $(EL1_REBUILD_TRIGGER) $(EL1_LIBRARY_FILE)
 	clang++ $(EL1_CPPFLAGS) $(CXXFLAGS) $(EL1_LDFLAGS) $(LDFLAGS) -fuse-ld=lld -Wall -Wextra -std=gnu++20 -flto=auto -Os -lsystemd -lel1 -lkrb5 "-DVERSION=\"$(VERSION)\"" -o krenewd krenewd.cpp
 	$(EL1_RUN_ENV) ./krenewd --version
 
