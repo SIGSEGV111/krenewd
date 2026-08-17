@@ -1,4 +1,6 @@
-%define el1_min_version 124
+%if 0%{?el1_version:1} == 0
+%{error:el1_version must be defined by easy-rpm}
+%endif
 
 Name:           krenewd
 Summary:        Kerberos Ticket Refresh Daemon
@@ -8,12 +10,14 @@ License:        GPLv3
 URL:            https://www.brennecke-it.net
 
 BuildRequires:  clang
-BuildRequires:  el1-devel >= %{el1_min_version}
+%if "%{getenv:EL1_INCLUDE_DIR}" == "" || "%{getenv:EL1_LIB_DIR}" == ""
+BuildRequires:  el1-devel = %{el1_version}
+%endif
 BuildRequires:  go-md2man
 BuildRequires:  lld
 BuildRequires:  pkgconfig(krb5)
 BuildRequires:  pkgconfig(libsystemd)
-Requires:       el1 >= %{el1_min_version}
+Requires:       el1 = %{el1_version}
 Requires:       krb5-client
 Requires:       /usr/sbin/runuser
 Requires(post): sed
