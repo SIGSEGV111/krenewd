@@ -23,6 +23,7 @@ PROGRAM_MAIN_SOURCES := krenewd.cpp
 PROGRAM_MAIN_LDLIBS := -lsystemd -lkrb5
 PROGRAM_MAIN_VERIFY_ARGS := --version
 
+RPM_OUT_DIR = $(OUT_DIR)/rpm
 RPM_PACKAGE_IDS := MAIN
 RPM_MAIN_NAME := krenewd
 RPM_MAIN_SPEC := krenewd.spec
