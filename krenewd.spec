@@ -31,7 +31,7 @@ krenewd is a daemon designed to automate the renewal of Kerberos tickets, ensuri
 %setup -q -n krenewd
 
 %build
-make %{?_smp_mflags} VERSION="Version %{version}"
+make release %{?_smp_mflags} VERSION="Version %{version}"
 
 %install
 make install BINDIR=%{buildroot}%{_bindir} UNITDIR="%{buildroot}%{_unitdir}" MANDIR="%{buildroot}%{_mandir}" LIBEXECDIR="%{buildroot}%{_libexecdir}/krenewd" NFSCONFDIR="%{buildroot}/etc/nfs.conf.d"
